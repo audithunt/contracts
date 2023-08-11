@@ -12,20 +12,20 @@ describe("Vault", function () {
     const token = await MockToken.deploy();
     
     const Vault = await ethers.getContractFactory("Vault");
-    const vault = await Vault.deploy(token.address);
+    const vault = await Vault.deploy(await token.getAddress());
 
     return { owner, user, token, vault };
   }
 
-  describe.only("Deployment", function () {
+  describe("Deployment", function () {
     it("Should set the right owner", async function () {
       const { vault, owner } = await loadFixture(fixture);
       expect(await vault.owner()).to.equal(owner.address);
     });
-
+  
     it("Should set the correct token", async function () {
       const { vault, token } = await loadFixture(fixture);
-      expect(await vault.token()).to.equal(token.address);
+      expect(await vault.token()).to.equal(await token.getAddress());
     });
-  });
+  })
 });
