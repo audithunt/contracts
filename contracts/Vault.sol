@@ -13,9 +13,11 @@ interface IERC20 {
 
 contract Vault is Ownable {
     address public vaultProxyEventAddress;
+    address public tokenAddress;
 
-    constructor(address _vaultProxyEventAddress) {
+    constructor(address _vaultProxyEventAddress, address _tokenAddress) {
         vaultProxyEventAddress = _vaultProxyEventAddress;
+        tokenAddress =  _tokenAddress;
     }
 
     function deposit() public payable {
@@ -31,14 +33,14 @@ contract Vault is Ownable {
     }
 
     // Transfer ERC20 tokens from WALLET to VAULT
-    function depositToken(address tokenAddress, uint256 amount) external {
+    function depositToken(uint256 amount) external {
         IERC20(tokenAddress).transferFrom(msg.sender, address(this), amount);
 
         VaultProxyEvent(vaultProxyEventAddress).emitTokenDepositedEvent(tokenAddress, msg.sender, amount);
     }
 
     // Transfer ERC20 tokens from Vault to GIVEN address
-    function sendTokens(address tokenAddress, uint256 amount, address targetAddress) external onlyOwner {
+    function sendTokens(uint256 amount, address targetAddress) external onlyOwner {
         require(IERC20(tokenAddress).balanceOf(address(this)) >= amount, "Insufficient funds");
         
         // TODO: Check if transfer func is correct. Not better transferFrom [safer?]
