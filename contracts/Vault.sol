@@ -18,7 +18,7 @@ contract Vault is Ownable {
         tokenAddress =  _tokenAddress;
     }
 
-    function deposit() public payable {
+    function depositETH() public payable {
         VaultProxyEvent(vaultProxyEventAddress).emitETHDepositedEvent(msg.sender, msg.value);
     }
 
