@@ -5,6 +5,9 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "./VaultProxyEvent.sol";
 
+error InsufficientBalance();
+error FailedToSendEther();
+
 contract Vault is Ownable {
     address public vaultProxyEventAddress;
     address public tokenAddress;
@@ -19,11 +22,11 @@ contract Vault is Ownable {
     }
 
     function sendETH(uint256 amount, address payable targetAddress) external onlyOwner {
-        uint contractAmount = address(this).balance;
-        require(amount > contractAmount, "Not enough ETH on contract");
+        uint balance = address(this).balance;
+        if(amount > balance) revert InsufficientBalance();
 
         (bool success, ) = targetAddress.call{value: amount}("");
-        require(success, "Failed to send Ether");
+        if(!success) revert FailedToSendEther();
     }
 
     // Transfer ERC20 tokens from WALLET to VAULT
