@@ -2,52 +2,49 @@
 pragma solidity ^0.8.17;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "./VaultProxyEvent.sol";
 
-
-interface IERC20 {
-    function transferFrom(address sender, address recipient, uint256 amount) external returns (bool);
-    function transfer(address recipient, uint256 amount) external returns (bool);
-    function balanceOf(address account) external view returns (uint256);
-}
+error InsufficientBalance();
+error InsufficientERC20Balance();
+error FailedToSendEther();
 
 contract Vault is Ownable {
-    address payable public targetAddress;
     address public vaultProxyEventAddress;
+    address public tokenAddress;
 
-    constructor(address payable _targetAddress, address _vaultProxyEventAddress) {
-        targetAddress = _targetAddress;
+    constructor(address _vaultProxyEventAddress, address _tokenAddress) {
         vaultProxyEventAddress = _vaultProxyEventAddress;
+        tokenAddress =  _tokenAddress;
     }
 
-    // Allows the owner to change the target address
-    function setTargetAddress(address payable _newAddress) external onlyOwner {
-        targetAddress = _newAddress;
-    }
-
-    // Fallback function to receive ETH
-    receive() external payable {
-        require(msg.value > 0, "Must send ETH");
-
-        targetAddress.transfer(msg.value);
-
+    function depositETH() public payable {
         VaultProxyEvent(vaultProxyEventAddress).emitETHDepositedEvent(msg.sender, msg.value);
     }
 
-    // Allows the owner to withdraw ETH from the contract
-    function withdrawETH(uint256 amount) external onlyOwner {
-        payable(owner()).transfer(amount);
+    function sendETH(uint256 amount, address payable targetAddress) external onlyOwner {
+        uint balance = address(this).balance;
+        if(amount > balance) revert InsufficientBalance();
+
+        (bool success, ) = targetAddress.call{value: amount}("");
+        if(!success) revert FailedToSendEther();
     }
 
-    function receiveTokens(address tokenAddress, uint256 amount) external {
-        IERC20(tokenAddress).transferFrom(msg.sender, targetAddress, amount);
-
+    // Transfer ERC20 tokens from WALLET to VAULT
+    function depositToken(uint256 amount) external {
+        if(IERC20(tokenAddress).balanceOf(msg.sender) < amount) revert InsufficientERC20Balance();
+        
+        IERC20(tokenAddress).transferFrom(msg.sender, address(this), amount);
         VaultProxyEvent(vaultProxyEventAddress).emitTokenDepositedEvent(tokenAddress, msg.sender, amount);
     }
 
-    // Allows the owner to withdraw ERC-20 tokens from the contract
-    function withdrawTokens(address tokenAddress, uint256 amount) external onlyOwner {
-        require(IERC20(tokenAddress).balanceOf(address(this)) >= amount, "Insufficient funds");
-        IERC20(tokenAddress).transfer(owner(), amount);
+    // Transfer ERC20 tokens from Vault to GIVEN address
+    function sendTokens(uint256 amount, address targetAddress) external onlyOwner {
+        if(IERC20(tokenAddress).balanceOf(address(this)) < amount) revert InsufficientERC20Balance();
+        
+        IERC20(tokenAddress).transferFrom(address(this), targetAddress, amount);
     }
+
+    // TODO: Add FEE collection
+    // TODO: Add bool to set if it's possible to transfer funds to the VAULT or not.
 }

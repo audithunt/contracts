@@ -29,7 +29,7 @@ describe("Vault", function () {
 
     it("Should set the correct target address", async function () {
       const { vault, target } = await loadFixture(fixture);
-      expect(await vault.targetAddress()).to.equal(target.address);
+      expect(await vault.getAddress()).to.equal(target.address);
     });
   });
 
