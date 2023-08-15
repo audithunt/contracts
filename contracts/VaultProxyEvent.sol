@@ -10,7 +10,6 @@ contract VaultProxyEvent {
 
     mapping(address => bool) public listenedVaults;
 
-
     function addVaultToListen(address _vault) public {
         listenedVaults[_vault] = true;
     }
