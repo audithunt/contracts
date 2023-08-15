@@ -6,8 +6,11 @@ describe("Vault", function () {
   async function fixture() {
     const [owner, user, target] = await ethers.getSigners();
     
+    const VaultProxyEvent = await ethers.getContractFactory("VaultProxyEvent");
+    const proxyEvent = await VaultProxyEvent.deploy();
+
     const Vault = await ethers.getContractFactory("Vault");
-    const vault = await Vault.deploy(target.address);
+    const vault = await Vault.deploy(target.address, await proxyEvent.getAddress());
 
     console.log("Owner Address:", owner.address);
     console.log("User Address:", user.address);
@@ -15,7 +18,7 @@ describe("Vault", function () {
     console.log("Vault Contract Address:", await vault.getAddress());
     console.log("Target balance:", await ethers.provider.getBalance(target.address))
 
-    return { owner, user, target, vault };
+    return { owner, user, target, vault, proxyEvent};
   }
 
   describe("Deployment", function () {
@@ -32,17 +35,23 @@ describe("Vault", function () {
 
   describe("Receive ETH", function () {
     it("Should forward received ETH to target address", async function () {
-      const { user, target, vault } = await loadFixture(fixture);
+      const { user, target, vault, proxyEvent } = await loadFixture(fixture);
       const sendAmount = ethers.parseEther("1");
 
       const initialTargetBalance = ethers.toBigInt(await ethers.provider.getBalance(target.address))
       const endBalance: BigInt = initialTargetBalance + sendAmount
 
-      await user.sendTransaction({
+      const tx = await user.sendTransaction({
         to: vault.getAddress(),
         value: sendAmount
       });
+      await tx.wait();
+
       expect(await ethers.provider.getBalance(target.address)).to.equal(endBalance.toString());
+    
+      await expect(tx)
+      .to.emit(proxyEvent, "ETHDeposited")
+      .withArgs(user.address, ethers.parseEther("1"));
     });
   });
 });
