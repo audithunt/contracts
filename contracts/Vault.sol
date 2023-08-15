@@ -25,16 +25,6 @@ contract Vault is Ownable {
     }
 
     function deposit(uint _amount) external {
-        /*
-        a = amount
-        B = balance of token before deposit
-        T = total supply
-        s = shares to mint
-
-        (T + s) / T = (a + B) / B 
-
-        s = aT / B
-        */
         uint shares;
         if (totalSupply == 0) {
             shares = _amount;
@@ -47,16 +37,6 @@ contract Vault is Ownable {
     }
 
     function withdraw(uint _shares) external onlyOwner {
-        /*
-        a = amount
-        B = balance of token before withdraw
-        T = total supply
-        s = shares to burn
-
-        (T - s) / T = (B - a) / B 
-
-        a = sB / T
-        */
         uint amount = (_shares * token.balanceOf(address(this))) / totalSupply;
         _burn(msg.sender, _shares);
         token.transfer(msg.sender, amount);

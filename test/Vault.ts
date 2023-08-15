@@ -28,4 +28,57 @@ describe("Vault", function () {
       expect(await vault.token()).to.equal(await token.getAddress());
     });
   })
+
+  
+  describe("Deposit", function () {
+    it("User should be able to deposit tokens", async function () {
+      const { user, token, vault } = await loadFixture(fixture);
+      const depositAmount = ethers.utils.parseEther('100');
+
+      await token.connect(user).approve(vault.address, depositAmount);
+      await vault.connect(user).deposit(depositAmount);
+
+      expect(await token.balanceOf(vault.address)).to.equal(depositAmount);
+    });
+
+    it("Depositing should mint the correct number of shares", async function () {
+      const { user, token, vault } = await loadFixture(fixture);
+      const depositAmount = ethers.utils.parseEther('100');
+
+      await token.connect(user).approve(vault.address, depositAmount);
+      await vault.connect(user).deposit(depositAmount);
+
+      expect(await vault.balanceOf(user.address)).to.equal(depositAmount);
+    });
+  });
+
+  describe("Withdraw", function () {
+    beforeEach(async function() {
+      const { user, token, vault } = await loadFixture(fixture);
+      const depositAmount = ethers.utils.parseEther('100');
+
+      await token.connect(user).approve(vault.address, depositAmount);
+      await vault.connect(user).deposit(depositAmount);
+    });
+
+    it("Non-owner should not be able to withdraw", async function () {
+      const { user, vault } = await loadFixture(fixture);
+      await expect(vault.connect(user).withdraw(ethers.utils.parseEther('10'))).to.be.revertedWith("Ownable: caller is not the owner");
+    });
+
+    it("Owner should be able to withdraw", async function () {
+      const { owner, vault } = await loadFixture(fixture);
+      await expect(vault.connect(owner).withdraw(ethers.utils.parseEther('10'))).not.to.be.reverted;
+    });
+
+    it("Withdrawal should burn the correct number of shares", async function () {
+      const { owner, vault } = await loadFixture(fixture);
+      const initialBalance = await vault.balanceOf(owner.address);
+      const withdrawAmount = ethers.utils.parseEther('10');
+
+      await vault.connect(owner).withdraw(withdrawAmount);
+
+      expect(await vault.balanceOf(owner.address)).to.equal(initialBalance.sub(withdrawAmount));
+    });
+  });
 });
