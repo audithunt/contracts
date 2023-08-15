@@ -6,6 +6,7 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "./VaultProxyEvent.sol";
 
 error InsufficientBalance();
+error InsufficientERC20Balance();
 error FailedToSendEther();
 
 contract Vault is Ownable {
@@ -38,7 +39,7 @@ contract Vault is Ownable {
 
     // Transfer ERC20 tokens from Vault to GIVEN address
     function sendTokens(uint256 amount, address targetAddress) external onlyOwner {
-        require(IERC20(tokenAddress).balanceOf(address(this)) >= amount, "Insufficient funds");
+        if(IERC20(tokenAddress).balanceOf(address(this)) < amount) revert InsufficientERC20Balance();
         
         // TODO: Check if transfer func is correct. Not better transferFrom [safer?]
         IERC20(tokenAddress).transfer(targetAddress, amount);
