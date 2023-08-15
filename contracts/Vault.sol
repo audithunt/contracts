@@ -10,7 +10,7 @@ interface IERC20 {
     function balanceOf(address account) external view returns (uint256);
 }
 
-contract CombinedVault is Ownable {
+contract Vault is Ownable {
     address payable public targetAddress;
 
     constructor(address payable _targetAddress) {
