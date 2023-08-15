@@ -32,8 +32,9 @@ contract Vault is Ownable {
 
     // Transfer ERC20 tokens from WALLET to VAULT
     function depositToken(uint256 amount) external {
+        if(IERC20(tokenAddress).balanceOf(msg.sender) < amount) revert InsufficientERC20Balance();
+        
         IERC20(tokenAddress).transferFrom(msg.sender, address(this), amount);
-
         VaultProxyEvent(vaultProxyEventAddress).emitTokenDepositedEvent(tokenAddress, msg.sender, amount);
     }
 
