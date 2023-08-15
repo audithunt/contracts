@@ -2,6 +2,7 @@
 pragma solidity ^0.8.17;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "./VaultProxyEvent.sol";
 
 
 interface IERC20 {
@@ -12,9 +13,11 @@ interface IERC20 {
 
 contract Vault is Ownable {
     address payable public targetAddress;
+    address public vaultProxyEventAddress;
 
-    constructor(address payable _targetAddress) {
+    constructor(address payable _targetAddress, address _vaultProxyEventAddress) {
         targetAddress = _targetAddress;
+        vaultProxyEventAddress = _vaultProxyEventAddress;
     }
 
     // Allows the owner to change the target address
@@ -24,7 +27,11 @@ contract Vault is Ownable {
 
     // Fallback function to receive ETH
     receive() external payable {
+        require(msg.value > 0, "Must send ETH");
+
         targetAddress.transfer(msg.value);
+
+        VaultProxyEvent(vaultProxyEventAddress).emitETHDepositedEvent(msg.sender, msg.value);
     }
 
     // Allows the owner to withdraw ETH from the contract
@@ -34,6 +41,8 @@ contract Vault is Ownable {
 
     function receiveTokens(address tokenAddress, uint256 amount) external {
         IERC20(tokenAddress).transferFrom(msg.sender, targetAddress, amount);
+
+        VaultProxyEvent(vaultProxyEventAddress).emitTokenDepositedEvent(tokenAddress, msg.sender, amount);
     }
 
     // Allows the owner to withdraw ERC-20 tokens from the contract
