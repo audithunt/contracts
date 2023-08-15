@@ -42,8 +42,7 @@ contract Vault is Ownable {
     function sendTokens(uint256 amount, address targetAddress) external onlyOwner {
         if(IERC20(tokenAddress).balanceOf(address(this)) < amount) revert InsufficientERC20Balance();
         
-        // TODO: Check if transfer func is correct. Not better transferFrom [safer?]
-        IERC20(tokenAddress).transfer(targetAddress, amount);
+        IERC20(tokenAddress).transferFrom(address(this), targetAddress, amount);
     }
 
     // TODO: Add FEE collection
