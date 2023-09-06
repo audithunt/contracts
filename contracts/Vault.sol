@@ -18,11 +18,11 @@ contract Vault is Ownable {
         tokenAddress =  _tokenAddress;
     }
 
-    function depositETH() public payable {
-        VaultProxyEvent(vaultProxyEventAddress).emitETHDepositedEvent(msg.sender, msg.value);
+    function depositNative() public payable {
+        VaultProxyEvent(vaultProxyEventAddress).emitNativeDepositedEvent(msg.sender, msg.value);
     }
 
-    function sendETH(uint256 amount, address payable targetAddress) external onlyOwner {
+    function sendNative(uint256 amount, address payable targetAddress) external onlyOwner {
         uint balance = address(this).balance;
         if(amount > balance) revert InsufficientBalance();
 

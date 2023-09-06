@@ -3,7 +3,7 @@ pragma solidity ^0.8.17;
 
 contract VaultProxyEvent {
 
-    event ETHDeposited(address indexed depositor, uint256 amount);
+    event NativeDeposited(address indexed depositor, uint256 amount);
 
     event TokenDeposited(address indexed tokenAddress, address indexed depositor, uint256 amount);
 
@@ -13,8 +13,8 @@ contract VaultProxyEvent {
         listenedVaults[_vault] = true;
     }
 
-    function emitETHDepositedEvent(address depositor, uint256 amount) external {
-        emit ETHDeposited(depositor, amount);
+    function emitNativeDepositedEvent(address depositor, uint256 amount) external {
+        emit NativeDeposited(depositor, amount);
     }
 
     function emitTokenDepositedEvent(address tokenAddress, address depositor, uint256 amount) external {

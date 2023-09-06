@@ -50,7 +50,7 @@ describe("Vault", function () {
       expect(await ethers.provider.getBalance(target.address)).to.equal(endBalance.toString());
     
       await expect(tx)
-      .to.emit(proxyEvent, "ETHDeposited")
+      .to.emit(proxyEvent, "NativeDeposited")
       .withArgs(user.address, ethers.parseEther("1"));
     });
   });
