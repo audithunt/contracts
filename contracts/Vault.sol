@@ -45,6 +45,14 @@ contract Vault is Ownable {
         IERC20(tokenAddress).transferFrom(address(this), targetAddress, amount);
     }
 
+    function getNativeBalance() external view returns (uint256) {
+        return address(this).balance;
+    }
+
+    function getTokenBalance() external view returns (uint256) {
+        return IERC20(tokenAddress).balanceOf(address(this));
+    }
+
     // TODO: Add FEE collection
     // TODO: Add bool to set if it's possible to transfer funds to the VAULT or not.
 }
