@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.17;
+pragma solidity ^0.8.23;
 
-import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/utils/Counters.sol";
+import "@openzeppelin/contracts@4.9.0/token/ERC721/ERC721.sol";
+import "@openzeppelin/contracts@4.9.0/access/Ownable.sol";
+import "@openzeppelin/contracts@4.9.0/utils/Counters.sol";
 
 contract SoulboundToken is ERC721, Ownable {
     using Counters for Counters.Counter;
@@ -24,18 +24,18 @@ contract SoulboundToken is ERC721, Ownable {
 
     // Set the token URI (IPFS CID)
     function _setTokenURI(uint256 tokenId, string memory ipfsCID) internal virtual {
-        require(_exists(tokenId), "ERC721Metadata: URI set of nonexistent token");
+        require(_ownerOf(tokenId) != address(0), "ERC721Metadata: URI set of nonexistent token");
         _tokenURIs[tokenId] = ipfsCID;
     }
 
     // Get the token URI (IPFS CID)
     function tokenURI(uint256 tokenId) public view override returns (string memory) {
-        require(_exists(tokenId), "ERC721Metadata: URI query for nonexistent token");
+        require(_ownerOf(tokenId) != address(0), "ERC721Metadata: URI query for nonexistent token");
         return _tokenURIs[tokenId];
     }
 
     function burn(uint256 tokenId) external {
-        require(ownerOf(tokenId) == msg.sender, "Only the owner of the token can burn it.");
+        require(_ownerOf(tokenId) == msg.sender, "Only the owner of the token can burn it.");
         _burn(tokenId);
     }
 
