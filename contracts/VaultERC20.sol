@@ -13,7 +13,7 @@ contract VaultERC20 is Ownable {
     address public vaultProxyEventAddress;
     address public tokenAddress;
 
-    constructor(address _vaultProxyEventAddress, address _tokenAddress) {
+    constructor(address _vaultProxyEventAddress, address _tokenAddress, address initialOwner) Ownable(initialOwner) {
         vaultProxyEventAddress = _vaultProxyEventAddress;
         tokenAddress =  _tokenAddress;
     }

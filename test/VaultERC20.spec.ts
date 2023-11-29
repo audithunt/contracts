@@ -17,7 +17,7 @@ describe("Vault", function () {
     mockToken = await MockToken.deploy();
 
     const Vault = await ethers.getContractFactory("VaultERC20");
-    vault = await Vault.deploy(await proxyEvent.getAddress(), await mockToken.getAddress());
+    vault = await Vault.deploy(await proxyEvent.getAddress(), await mockToken.getAddress(), owner.address);
 
     console.log("Owner Address:", owner.address);
     console.log("User Address:", user.address);
@@ -31,12 +31,12 @@ describe("Vault", function () {
       const [owner, user] = await ethers.getSigners();
 
       // Send tokens from OWNER to USER
-      await mockToken.connect(owner).increaseAllowance(owner.address, 10000)
+      await mockToken.connect(owner).approve(owner.address, 10000)
       await mockToken.connect(owner).transferFrom(owner.address, user.address, 10000);
 
       // Increase ALLOWANCE for VAULT contract
-      await mockToken.connect(user).increaseAllowance(user.address, 10000)
-      await mockToken.connect(user).increaseAllowance(await vault.getAddress(), 10000)
+      await mockToken.connect(user).approve(user.address, 10000)
+      await mockToken.connect(user).approve(await vault.getAddress(), 10000)
 
       const tx = await vault.connect(user).deposit(1000);
       await tx.wait();
@@ -52,11 +52,11 @@ describe("Vault", function () {
       const [owner, user] = await ethers.getSigners();
 
       // Send tokens from OWNER to USER
-      await mockToken.connect(owner).increaseAllowance(owner.address, 10000)
+      await mockToken.connect(owner).approve(owner.address, 10000)
       await mockToken.connect(owner).transferFrom(owner.address, user.address, 10000);
       
-      await mockToken.connect(user).increaseAllowance(user.address, 10000)
-      await mockToken.connect(user).increaseAllowance(await vault.getAddress(), 10000)
+      await mockToken.connect(user).approve(user.address, 10000)
+      await mockToken.connect(user).approve(await vault.getAddress(), 10000)
 
       const tx = await vault.connect(user).deposit(1000);
       await tx.wait();
@@ -71,16 +71,16 @@ describe("Vault", function () {
       const [owner, user] = await ethers.getSigners();
 
       // Send tokens from OWNER to USER
-      await mockToken.connect(owner).increaseAllowance(owner.address, 10000)
+      await mockToken.connect(owner).approve(owner.address, 10000)
       await mockToken.connect(owner).transferFrom(owner.address, user.address, 10000);
       
-      await mockToken.connect(user).increaseAllowance(user.address, 10000)
-      await mockToken.connect(user).increaseAllowance(await vault.getAddress(), 10000)
+      await mockToken.connect(user).approve(user.address, 10000)
+      await mockToken.connect(user).approve(await vault.getAddress(), 10000)
 
       const tx = await vault.connect(user).deposit(1000);
       await tx.wait();
 
-      await expect(vault.connect(user).send(500n, user.address)).to.be.revertedWith("Ownable: caller is not the owner");
+      await expect(vault.connect(user).send(500n, user.address)).to.be.revertedWithCustomError(vault, 'OwnableUnauthorizedAccount');
     });
   });
 });

@@ -12,7 +12,7 @@ error FailedToSendEther();
 contract VaultNative is Ownable {
     address public vaultProxyEventAddress;
 
-    constructor(address _vaultProxyEventAddress) {
+    constructor(address _vaultProxyEventAddress, address initialOwner) Ownable(initialOwner) {
         vaultProxyEventAddress = _vaultProxyEventAddress;
     }
 

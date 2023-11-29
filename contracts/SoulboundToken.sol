@@ -1,25 +1,27 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.23;
 
-import "@openzeppelin/contracts@4.9.0/token/ERC721/ERC721.sol";
-import "@openzeppelin/contracts@4.9.0/access/Ownable.sol";
-import "@openzeppelin/contracts@4.9.0/utils/Counters.sol";
+import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract SoulboundToken is ERC721, Ownable {
-    using Counters for Counters.Counter;
-    Counters.Counter private _tokenIdCounter;
+    uint256 private _tokenIdCounter;
 
     // Mapping from token ID to IPFS CID
     mapping(uint256 => string) private _tokenURIs;
+    mapping(uint256 tokenId => address) private _owners;
+    mapping(address owner => uint256) private _balances;
 
-    constructor() ERC721("SoulboundToken", "SBT") {}
+    constructor(address initialOwner) Ownable(initialOwner) ERC721("SoulboundToken", "SBT") {
+        _tokenIdCounter = 1;
+    }
 
     // Mint a new token
     function mintToken(address to, string memory ipfsCID) public onlyOwner {
-        _tokenIdCounter.increment();
-        uint256 newTokenId = _tokenIdCounter.current();
+        uint256 newTokenId = _tokenIdCounter;
         _mint(to, newTokenId);
         _setTokenURI(newTokenId, ipfsCID);
+        _tokenIdCounter++;
     }
 
     // Set the token URI (IPFS CID)
@@ -34,17 +36,40 @@ contract SoulboundToken is ERC721, Ownable {
         return _tokenURIs[tokenId];
     }
 
-    function burn(uint256 tokenId) external {
-        require(_ownerOf(tokenId) == msg.sender, "Only the owner of the token can burn it.");
-        _burn(tokenId);
+    function _ownerOf(uint256 tokenId) internal view override virtual returns (address) {
+        return _owners[tokenId];
     }
 
-    function _beforeTokenTransfer(address from, address to, uint256 tokenId, uint256 batchSize) override internal {
+    function _update(address to, uint256 tokenId, address auth) internal override returns(address) {
+        address from = _ownerOf(tokenId);
+
+        // Perform (optional) operator check
+        if (auth != address(0)) {
+            _checkAuthorized(from, auth, tokenId);
+        }
+
         require(from == address(0) || to == address(0), "This a Soulbound token. It cannot be transferred. It can only be burned by the token owner.");
-        super._beforeTokenTransfer(from, to, tokenId, batchSize);
-    }
 
-    function _burn(uint256 tokenId) internal override(ERC721) {
-        super._burn(tokenId);
+        // Execute the update
+        if (from != address(0)) {
+            // Clear approval. No need to re-authorize or emit the Approval event
+            _approve(address(0), tokenId, address(0), false);
+
+            unchecked {
+                _balances[from] -= 1;
+            }
+        }
+
+        if (to != address(0)) {
+            unchecked {
+                _balances[to] += 1;
+            }
+        }
+
+        _owners[tokenId] = to;
+
+        emit Transfer(from, to, tokenId);
+
+        return from;
     }
 }

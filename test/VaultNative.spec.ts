@@ -13,7 +13,7 @@ describe("Vault", function () {
     proxyEvent = await VaultProxyEvent.deploy();
 
     const Vault = await ethers.getContractFactory("VaultNative");
-    vault = await Vault.deploy(await proxyEvent.getAddress());
+    vault = await Vault.deploy(await proxyEvent.getAddress(), owner.address);
 
     console.log("Owner Address:", owner.address);
     console.log("User Address:", user.address);
@@ -54,7 +54,7 @@ describe("Vault", function () {
 
       await vault.connect(user).deposit({ value: sendAmount });
       expect(await vault.getBalance()).to.equal(1000000000000000000n);
-      await expect(vault.connect(user).send(ethers.parseEther('0.5'), user.address)).to.be.revertedWith("Ownable: caller is not the owner");
+      await expect(vault.connect(user).send(ethers.parseEther('0.5'), user.address)).to.be.revertedWithCustomError(vault, 'OwnableUnauthorizedAccount');
     });
   });
 });

@@ -13,13 +13,13 @@ describe("SBToken", function () {
     const [owner, user] = await ethers.getSigners();
     
     const SoulboundToken = await ethers.getContractFactory("SoulboundToken");
-    sbt = await SoulboundToken.deploy();
+    sbt = await SoulboundToken.deploy(owner.address);
 
     const VaultProxyEvent = await ethers.getContractFactory("VaultProxyEvent");
     proxyEvent = await VaultProxyEvent.deploy();
 
     const Vault = await ethers.getContractFactory("VaultNative");
-    vault = await Vault.deploy(await proxyEvent.getAddress());
+    vault = await Vault.deploy(await proxyEvent.getAddress(), owner.address);
 
     console.log("Owner Address:", owner.address);
     console.log("User Address:", user.address);
