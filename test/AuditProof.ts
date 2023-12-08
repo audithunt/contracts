@@ -1,25 +1,25 @@
 import { expect } from "chai";
 import { ethers } from "hardhat";
-import { SoulboundToken, VaultProxyEvent } from "../typechain-types";
+import { AuditProof, VaultProxyEvent } from "../typechain-types";
 import { VaultNative } from "../typechain-types/contracts/VaultNative.sol";
 
 describe("SBToken", function () {
-  let sbt: SoulboundToken;
+  let sbt: AuditProof;
 
   let vault: VaultNative;
   let proxyEvent: VaultProxyEvent;
 
   this.beforeEach(async () => {
-    const [owner, user] = await ethers.getSigners();
-    
-    const SoulboundToken = await ethers.getContractFactory("SoulboundToken");
-    sbt = await SoulboundToken.deploy(owner.address);
-
+    const [owner, user, feeAccount] = await ethers.getSigners();
+  
     const VaultProxyEvent = await ethers.getContractFactory("VaultProxyEvent");
     proxyEvent = await VaultProxyEvent.deploy();
 
+    const AuditProof = await ethers.getContractFactory("AuditProof");
+    sbt = await AuditProof.deploy(await proxyEvent.getAddress(), owner.address);
+
     const Vault = await ethers.getContractFactory("VaultNative");
-    vault = await Vault.deploy(await proxyEvent.getAddress(), owner.address);
+    vault = await Vault.deploy(await proxyEvent.getAddress(), feeAccount.address, owner.address);
 
     console.log("Owner Address:", owner.address);
     console.log("User Address:", user.address);
@@ -35,6 +35,9 @@ describe("SBToken", function () {
       await tx.wait();
     
       expect(await sbt.tokenURI(1)).to.equal('123');
+      await expect(tx)
+        .to.emit(proxyEvent, "ProofMinted")
+        .withArgs(await vault.getAddress(), '123');
     });
 
     it("should not be able to transfer", async function () {

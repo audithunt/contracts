@@ -8,7 +8,7 @@ describe("Vault", function () {
   let mockToken: MockToken;
 
   this.beforeEach(async () => {
-    const [owner, user] = await ethers.getSigners();
+    const [owner, user, feeAccount] = await ethers.getSigners();
     
     const VaultProxyEvent = await ethers.getContractFactory("VaultProxyEvent");
     proxyEvent = await VaultProxyEvent.deploy();
@@ -17,10 +17,11 @@ describe("Vault", function () {
     mockToken = await MockToken.deploy();
 
     const Vault = await ethers.getContractFactory("VaultERC20");
-    vault = await Vault.deploy(await proxyEvent.getAddress(), await mockToken.getAddress(), owner.address);
+    vault = await Vault.deploy(await proxyEvent.getAddress(), await mockToken.getAddress(), feeAccount.address, owner.address);
 
     console.log("Owner Address:", owner.address);
     console.log("User Address:", user.address);
+    console.log("Fee Address:", user.address);
     console.log("Vault Contract Address:", await vault.getAddress());
     console.log("MockToken Contract Address:", await mockToken.getAddress());
     console.log("Vault Proxy Event Contract Address:", await proxyEvent.getAddress());
@@ -29,6 +30,7 @@ describe("Vault", function () {
   describe("MockToken Transfers", function () {
     it("deposit", async function () {
       const [owner, user] = await ethers.getSigners();
+      const fee = 1000 * 0.05;
 
       // Send tokens from OWNER to USER
       await mockToken.connect(owner).approve(owner.address, 10000)
@@ -41,7 +43,7 @@ describe("Vault", function () {
       const tx = await vault.connect(user).deposit(1000);
       await tx.wait();
 
-      expect(await vault.getBalance()).to.equal(1000);
+      expect(await vault.getBalance()).to.equal(1000 - fee);
     
       await expect(tx)
       .to.emit(proxyEvent, "TokenDeposited")
@@ -50,6 +52,7 @@ describe("Vault", function () {
 
     it("send", async function () {
       const [owner, user] = await ethers.getSigners();
+      const fee = 1000 * 0.05;
 
       // Send tokens from OWNER to USER
       await mockToken.connect(owner).approve(owner.address, 10000)
@@ -63,7 +66,7 @@ describe("Vault", function () {
 
       await vault.connect(owner).send(500n, user.address);
 
-      expect(await vault.getBalance()).to.equal(500n);
+      expect(await vault.getBalance()).to.equal(450n);
       expect(await mockToken.connect(user).balanceOf(user.address)).to.equal(9500n);
     });
 

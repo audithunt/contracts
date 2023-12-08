@@ -11,12 +11,19 @@ error FailedToSendEther();
 
 contract VaultNative is Ownable {
     address public vaultProxyEventAddress;
+    address public feeAddress;
 
-    constructor(address _vaultProxyEventAddress, address initialOwner) Ownable(initialOwner) {
+    constructor(address _vaultProxyEventAddress, address _feeAddress, address initialOwner) Ownable(initialOwner) {
         vaultProxyEventAddress = _vaultProxyEventAddress;
+        feeAddress = _feeAddress;
     }
 
     function deposit() public payable {
+        uint256 fee = (msg.value * 5) / 100;
+
+        (bool success, ) = feeAddress.call{value: fee}("");
+        if(!success) revert FailedToSendEther();
+
         VaultProxyEvent(vaultProxyEventAddress).emitNativeDepositedEvent(msg.sender, msg.value);
     }
 
@@ -33,5 +40,4 @@ contract VaultNative is Ownable {
     }
 
     // TODO: Add FEE collection
-    // TODO: Add bool to set if it's possible to transfer funds to the VAULT or not.
 }

@@ -2,16 +2,9 @@
 pragma solidity ^0.8.23;
 
 contract VaultProxyEvent {
-
     event NativeDeposited(address indexed depositor, uint256 amount);
-
     event TokenDeposited(address indexed tokenAddress, address indexed depositor, uint256 amount);
-
-    mapping(address => bool) public listenedVaults;
-
-    function addVaultToListen(address _vault) public {
-        listenedVaults[_vault] = true;
-    }
+    event ProofMinted(address indexed to, string indexed ipfsCID);
 
     function emitNativeDepositedEvent(address depositor, uint256 amount) external {
         emit NativeDeposited(depositor, amount);
@@ -20,6 +13,8 @@ contract VaultProxyEvent {
     function emitTokenDepositedEvent(address tokenAddress, address depositor, uint256 amount) external {
         emit TokenDeposited(tokenAddress, depositor, amount);
     }
+
+    function emitProofMinted(address to, string memory ipfsCID) external {
+        emit ProofMinted(to, ipfsCID);
+    }
 }
-// TODO: Add event to send token/eth
-// TODO: Event for status change -> pending/live/finished
