@@ -12,12 +12,10 @@ error FailedToSendEther();
 contract VaultERC20 is Ownable {
     address private vaultProxyEventAddress;
     address public tokenAddress;
-    address private feeAddress;
 
-    constructor(address _vaultProxyEventAddress, address _tokenAddress, address _feeAddress, address initialOwner) Ownable(initialOwner) {
+    constructor(address _vaultProxyEventAddress, address _tokenAddress, address initialOwner) Ownable(initialOwner) {
         vaultProxyEventAddress = _vaultProxyEventAddress;
         tokenAddress =  _tokenAddress;
-        feeAddress = _feeAddress;
     }
 
     // Transfer ERC20 tokens from WALLET to VAULT
@@ -27,7 +25,7 @@ contract VaultERC20 is Ownable {
         uint256 fee = (amount * 5) / 100;
         uint256 netAmount = amount - fee;
 
-        IERC20(tokenAddress).transferFrom(msg.sender, feeAddress, fee);
+        IERC20(tokenAddress).transferFrom(msg.sender, owner(), fee);
         IERC20(tokenAddress).transferFrom(msg.sender, address(this), netAmount);
         VaultProxyEvent(vaultProxyEventAddress).emitTokenDepositedEvent(tokenAddress, msg.sender, amount);
     }

@@ -10,7 +10,7 @@ describe("SBToken", function () {
   let proxyEvent: VaultProxyEvent;
 
   this.beforeEach(async () => {
-    const [owner, user, feeAccount] = await ethers.getSigners();
+    const [owner, user] = await ethers.getSigners();
   
     const VaultProxyEvent = await ethers.getContractFactory("VaultProxyEvent");
     proxyEvent = await VaultProxyEvent.deploy();
@@ -19,7 +19,7 @@ describe("SBToken", function () {
     sbt = await AuditProof.deploy(await proxyEvent.getAddress(), owner.address);
 
     const Vault = await ethers.getContractFactory("VaultNative");
-    vault = await Vault.deploy(await proxyEvent.getAddress(), feeAccount.address, owner.address);
+    vault = await Vault.deploy(await proxyEvent.getAddress(), owner.address);
 
     console.log("Owner Address:", owner.address);
     console.log("User Address:", user.address);

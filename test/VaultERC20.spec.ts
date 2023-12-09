@@ -8,7 +8,7 @@ describe("Vault", function () {
   let mockToken: MockToken;
 
   this.beforeEach(async () => {
-    const [owner, user, feeAccount] = await ethers.getSigners();
+    const [owner, user] = await ethers.getSigners();
     
     const VaultProxyEvent = await ethers.getContractFactory("VaultProxyEvent");
     proxyEvent = await VaultProxyEvent.deploy();
@@ -17,11 +17,10 @@ describe("Vault", function () {
     mockToken = await MockToken.deploy();
 
     const Vault = await ethers.getContractFactory("VaultERC20");
-    vault = await Vault.deploy(await proxyEvent.getAddress(), await mockToken.getAddress(), feeAccount.address, owner.address);
+    vault = await Vault.deploy(await proxyEvent.getAddress(), await mockToken.getAddress(), owner.address);
 
     console.log("Owner Address:", owner.address);
     console.log("User Address:", user.address);
-    console.log("Fee Address:", user.address);
     console.log("Vault Contract Address:", await vault.getAddress());
     console.log("MockToken Contract Address:", await mockToken.getAddress());
     console.log("Vault Proxy Event Contract Address:", await proxyEvent.getAddress());

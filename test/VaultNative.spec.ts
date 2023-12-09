@@ -7,24 +7,23 @@ describe("Vault", function () {
   let proxyEvent: VaultProxyEvent;
 
   this.beforeEach(async () => {
-    const [owner, user, feeAccount] = await ethers.getSigners();
+    const [owner, user] = await ethers.getSigners();
     
     const VaultProxyEvent = await ethers.getContractFactory("VaultProxyEvent");
     proxyEvent = await VaultProxyEvent.deploy();
 
     const Vault = await ethers.getContractFactory("VaultNative");
-    vault = await Vault.deploy(await proxyEvent.getAddress(), feeAccount.address, owner.address);
+    vault = await Vault.deploy(await proxyEvent.getAddress(), owner.address);
 
     console.log("Owner Address:", owner.address);
     console.log("User Address:", user.address);
-    console.log("Fee Address:", user.address);
     console.log("Vault Contract Address:", await vault.getAddress());
     console.log("Vault Proxy Event Contract Address:", await proxyEvent.getAddress());
   })
 
   describe("Receive ETH", function () {
     it("deposit", async function () {
-      const [_, user, feeAccount] = await ethers.getSigners();
+      const [_, user] = await ethers.getSigners();
       const sendAmount = ethers.parseEther("1");
       const fee = ethers.parseEther("0.05"); // 5% of initial 1 ether
 
