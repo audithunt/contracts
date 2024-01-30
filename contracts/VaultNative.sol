@@ -17,11 +17,6 @@ contract VaultNative is Ownable {
     }
 
     function deposit() public payable {
-        uint256 fee = (msg.value * 5) / 100;
-
-        (bool success, ) = owner().call{value: fee}("");
-        if(!success) revert FailedToSendEther();
-
         VaultProxyEvent(vaultProxyEventAddress).emitNativeDepositedEvent(msg.sender, msg.value);
     }
 

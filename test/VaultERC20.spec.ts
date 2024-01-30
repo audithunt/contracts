@@ -29,7 +29,6 @@ describe("Vault", function () {
   describe("MockToken Transfers", function () {
     it("deposit", async function () {
       const [owner, user] = await ethers.getSigners();
-      const fee = 1000 * 0.05;
 
       // Send tokens from OWNER to USER
       await mockToken.connect(owner).approve(owner.address, 10000)
@@ -42,7 +41,7 @@ describe("Vault", function () {
       const tx = await vault.connect(user).deposit(1000);
       await tx.wait();
 
-      expect(await vault.getBalance()).to.equal(1000 - fee);
+      expect(await vault.getBalance()).to.equal(1000);
     
       await expect(tx)
       .to.emit(proxyEvent, "TokenDeposited")
@@ -51,7 +50,6 @@ describe("Vault", function () {
 
     it("send", async function () {
       const [owner, user] = await ethers.getSigners();
-      const fee = 1000 * 0.05;
 
       // Send tokens from OWNER to USER
       await mockToken.connect(owner).approve(owner.address, 10000)
@@ -65,7 +63,7 @@ describe("Vault", function () {
 
       await vault.connect(owner).send(500n, user.address);
 
-      expect(await vault.getBalance()).to.equal(450n);
+      expect(await vault.getBalance()).to.equal(500n);
       expect(await mockToken.connect(user).balanceOf(user.address)).to.equal(9500n);
     });
 

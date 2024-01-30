@@ -22,11 +22,7 @@ contract VaultERC20 is Ownable {
     function deposit(uint256 amount) external {
         if(IERC20(tokenAddress).balanceOf(msg.sender) < amount) revert InsufficientERC20Balance();
 
-        uint256 fee = (amount * 5) / 100;
-        uint256 netAmount = amount - fee;
-
-        IERC20(tokenAddress).transferFrom(msg.sender, owner(), fee);
-        IERC20(tokenAddress).transferFrom(msg.sender, address(this), netAmount);
+        IERC20(tokenAddress).transferFrom(msg.sender, address(this), amount);
         VaultProxyEvent(vaultProxyEventAddress).emitTokenDepositedEvent(tokenAddress, msg.sender, amount);
     }
 
@@ -40,7 +36,4 @@ contract VaultERC20 is Ownable {
     function getBalance() external view returns (uint256) {
         return IERC20(tokenAddress).balanceOf(address(this));
     }
-
-    // TODO: Add FEE collection
-    // TODO: Add bool to set if it's possible to transfer funds to the VAULT or not.
 }

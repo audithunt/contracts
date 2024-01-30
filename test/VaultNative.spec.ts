@@ -25,10 +25,9 @@ describe("Vault", function () {
     it("deposit", async function () {
       const [_, user] = await ethers.getSigners();
       const sendAmount = ethers.parseEther("1");
-      const fee = ethers.parseEther("0.05"); // 5% of initial 1 ether
 
       const initialTargetBalance = ethers.toBigInt(await ethers.provider.getBalance(await vault.getAddress()))
-      const endBalance: BigInt = initialTargetBalance + sendAmount - fee;
+      const endBalance: BigInt = initialTargetBalance + sendAmount;
 
       const tx = await vault.connect(user).deposit({ value: sendAmount })
 
@@ -46,7 +45,7 @@ describe("Vault", function () {
       await vault.connect(user).deposit({ value: sendAmount });
 
       await vault.send(ethers.parseEther('0.5'), user.address);
-      expect(await vault.getBalance()).to.equal(450000000000000000n);
+      expect(await vault.getBalance()).to.equal(500000000000000000n);
     });
 
     it("send - not owner, revert", async function () {
@@ -54,7 +53,7 @@ describe("Vault", function () {
       const sendAmount = ethers.parseEther("1");
 
       await vault.connect(user).deposit({ value: sendAmount });
-      expect(await vault.getBalance()).to.equal(950000000000000000n);
+      expect(await vault.getBalance()).to.equal(1000000000000000000n);
       await expect(vault.connect(user).send(ethers.parseEther('0.5'), user.address)).to.be.revertedWithCustomError(vault, 'OwnableUnauthorizedAccount');
     });
   });
