@@ -40,6 +40,7 @@ contract AuditHunt is Ownable {
     }
 
     function depositEthBounty(uint256 huntId) public payable {
+        // Check if msg.value is in eth or wei, and adjust bountyAmount value to it
         require(msg.value > 0, "Deposit amount must be greater than 0");
 
         Hunt storage hunt = hunts[huntId];
@@ -52,7 +53,7 @@ contract AuditHunt is Ownable {
         if (hunt.depositedAmount >= hunt.bountyAmount && hunt.status == HuntStatus.Pending) {
             hunt.status = HuntStatus.Live;
             emit HuntStatusChanged(huntId, HuntStatus.Live);
-        }   
+        }
     }
 
     function depositUsdcBounty(uint256 huntId, uint256 usdcAmount, address tokenAddress) public {
@@ -76,7 +77,6 @@ contract AuditHunt is Ownable {
     function cancelAndWithdrawEthBounty(uint256 huntId) external {
         Hunt storage hunt = hunts[huntId];
         require(hunt.bountyCurrency == BountyCurrency.ETH, "Hunt bounty is not in ETH");
-        require(hunt.status == HuntStatus.Pending, "Withdrawal allowed only for Pending hunts");
         require(hunt.creator == msg.sender || owner() == msg.sender, "Only the hunt creator or contract owner can withdraw");
         require(hunt.depositedAmount > 0, "No funds to withdraw");
 
@@ -93,7 +93,6 @@ contract AuditHunt is Ownable {
     function cancelAndWithdrawUsdcBounty(uint256 huntId) external {
         Hunt storage hunt = hunts[huntId];
         require(hunt.bountyCurrency == BountyCurrency.USDC, "Hunt bounty is not in USDC");
-        require(hunt.status == HuntStatus.Pending, "Withdrawal allowed only for Pending hunts");
         require(hunt.creator == msg.sender || owner() == msg.sender, "Only the hunt creator or contract owner can withdraw");
 
         uint256 amountToWithdraw = hunt.depositedAmount;
