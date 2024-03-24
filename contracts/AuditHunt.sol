@@ -21,7 +21,7 @@ contract AuditHunt is Ownable {
     address public constant OFFICIAL_USDC_ADDRESS = 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48;
 
     mapping(uint256 => Hunt) public hunts;
-    uint256 public nextHuntId;
+    uint256 public nextHuntId = 1;
     IERC20 public usdcToken;
 
     event HuntCreated(uint256 indexed huntId, string name, uint256 amount, BountyCurrency bountyCurrency, address creator);
@@ -40,6 +40,8 @@ contract AuditHunt is Ownable {
     }
 
     function depositEthBounty(uint256 huntId) public payable {
+        require(msg.value > 0, "Deposit amount must be greater than 0");
+
         Hunt storage hunt = hunts[huntId];
         require(hunt.bountyCurrency == BountyCurrency.ETH, "This hunt does not accept ETH");
 
@@ -54,6 +56,7 @@ contract AuditHunt is Ownable {
     }
 
     function depositUsdcBounty(uint256 huntId, uint256 usdcAmount, address tokenAddress) public {
+        require(usdcAmount > 0, "Deposit amount must be greater than 0");
         require(tokenAddress == address(usdcToken), "USDC address does not match official address");
 
         Hunt storage hunt = hunts[huntId];
@@ -103,4 +106,31 @@ contract AuditHunt is Ownable {
         emit HuntStatusChanged(huntId, HuntStatus.Canceled);
     }
 
+    function getHuntDetails(uint256 huntId) public view returns (
+        string memory name,
+        uint256 bountyAmount,
+        uint256 depositedAmount,
+        BountyCurrency bountyCurrency,
+        HuntStatus status,
+        address creator
+    ) {
+        Hunt storage hunt = hunts[huntId];
+        return (
+            hunt.name,
+            hunt.bountyAmount,
+            hunt.depositedAmount,
+            hunt.bountyCurrency,
+            hunt.status,
+            hunt.creator
+        );
+    }
+
+    function isHuntLive(uint256 huntId) public view returns (bool) {
+        Hunt storage hunt = hunts[huntId];
+        return hunt.status == HuntStatus.Live;
+    }
+
+    function getTotalHunts() public view returns (uint256) {
+        return nextHuntId;
+    }
 }
