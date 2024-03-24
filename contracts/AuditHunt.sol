@@ -70,7 +70,7 @@ contract AuditHunt is Ownable {
         }
     }
 
-    function withdrawEthBounty(uint256 huntId) external {
+    function cancelAndWithdrawEthBounty(uint256 huntId) external {
         Hunt storage hunt = hunts[huntId];
         require(hunt.bountyCurrency == BountyCurrency.ETH, "Hunt bounty is not in ETH");
         require(hunt.status == HuntStatus.Pending, "Withdrawal allowed only for Pending hunts");
@@ -87,7 +87,7 @@ contract AuditHunt is Ownable {
         emit HuntStatusChanged(huntId, HuntStatus.Canceled);
     }
 
-    function withdrawUsdcBounty(uint256 huntId) external {
+    function cancelAndWithdrawUsdcBounty(uint256 huntId) external {
         Hunt storage hunt = hunts[huntId];
         require(hunt.bountyCurrency == BountyCurrency.USDC, "Hunt bounty is not in USDC");
         require(hunt.status == HuntStatus.Pending, "Withdrawal allowed only for Pending hunts");
